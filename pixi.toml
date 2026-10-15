@@ -1,0 +1,70 @@
+[workspace]
+name = "schmidt-astro-images"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+
+# Mirrors base/environment.yml
+[feature.base.dependencies]
+python = "3.13.*"  # match pangeo/pangeo-notebook:2026.06.04 (3.13.13)
+
+# Everyone wants to use nbgitpuller for distributing content, so include that
+nbgitpuller = "*"
+
+# Astropy also seems a staple, so let's install it in the base
+astropy = "*"
+
+# Install some other UI that is commonly used
+code-server = "*"  # open source vscode
+jupyter-vscode-proxy = "*"
+# ssh, so folsk can ssh in
+openssh = "*"
+jupyter-sshd-proxy = "*"
+
+# Since many subpackages will use pip
+pip = "*"
+
+[feature.base.target.linux-64.dependencies]
+# A bunch of packages have no wheels or conda-forge packages and need gcc at image build time
+gcc = "*"
+
+# Mirrors florence-symposium/environment.yml (layered on top of base)
+[feature.florence-symposium]
+# psrchive has no osx-arm64 build, and slicersim (git, dynamic version) must be
+# built to get its metadata, so this env is linux-64 only (matches the image).
+# Lock it from linux, e.g.:
+#   docker run --rm --platform linux/amd64 -v "$PWD":/w -w /w ghcr.io/prefix-dev/pixi:0.81.0 pixi lock
+platforms = ["linux-64"]
+
+[feature.florence-symposium.dependencies]
+# DSA-2000 pulsar notebooks: PSRCHIVE and tempo2 are conda-forge only
+psrchive = "*"
+tempo2 = "*"
+
+# for Argus, these are also conda-forge only (sncosmo needs gcc otherwise)
+sncosmo = "*"
+boto3 = "*"
+
+[feature.florence-symposium.pypi-dependencies]
+# Lazuli. The IFS and ESC notebooks need slicersim 1.3.4 (LazuliKilonova);
+# PyPI is at 1.3.0, so pin the GitHub commit until Mickael releases it.
+slicersim = { git = "https://github.com/MickaelRigault/slicersim.git", rev = "de16061bf3aca49128d1a872ca9408f816ec31de" }
+wcc-etc = { version = "*", extras = ["lightcurve"] }  # transit notebooks need jaxoplanet via lazuli-exo[transit]
+esc-etc = "*"
+wcc-sim = "*"
+lazuli-exo = "*"
+
+# Argus (argus_sim is not on PyPI; it lives in the hackathon repo)
+argus-sim = { git = "https://github.com/schmidt-observatories/science-symposium-2026-hackathon-materials.git", subdirectory = "argus/argus_survey_model" }
+redback = "*"  # needed for tutorial_survey_data.ipynb but not listed as dep so adding here
+
+# DSA-2000 helper package, same repo
+convening2026-release = { git = "https://github.com/schmidt-observatories/science-symposium-2026-hackathon-materials.git", subdirectory = "dsa/convening2026-release-2026.9.28" }
+
+[tasks]
+# Regenerate base/ and florence-symposium/environment.yml for the Docker images
+render-envs = "scripts/render-environments.sh"
+
+[environments]
+default = { features = ["base"], solve-group = "default" }
+base = { features = ["base"], solve-group = "default" }
+florence-symposium = { features = ["base", "florence-symposium"] }

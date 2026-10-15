@@ -1,22 +1,14 @@
+# Generated from pixi.toml by scripts/render-environments.sh -- do not edit by hand.
 channels:
-  - conda-forge
-
+- conda-forge
+- nodefaults
 dependencies:
-  # Everyone wants to use nbgitpuller for distributing content, so include that
-  - nbgitpuller
-
-  # Astropy also seems a staple, so let's install it in the base
-  - astropy
-
-  # A bunch of packages have no wheels or conda-forge packages and need gcc at image build time
-  - gcc
-
-  # Install some other UI that is commonly used
-  - code-server  # open source vscode
-  - jupyter-vscode-proxy
-  # ssh, so folsk can ssh in
-  - openssh
-  - jupyter-sshd-proxy
-
-  # Since many subpackages will use pip
-  - pip
+- python 3.13.*
+- nbgitpuller *
+- astropy *
+- code-server *
+- jupyter-vscode-proxy *
+- openssh *
+- jupyter-sshd-proxy *
+- pip *
+- gcc *
